@@ -1,0 +1,86 @@
+{% load allauth i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Out</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'deep-green': '#008862',
+                        'mint-white': '#eafff6',
+                        'bright-mint': '#5df8bf',
+                        'soft-mint': '#9dfdd4',
+                        'pearl-white': '#f8f8f8'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-mint-white">
+
+    
+
+    {% block head_title %}
+    {% trans "Sign Out" %}
+    {% endblock head_title %}
+
+    {% block content %}
+    <div
+        class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-deep-green/10 to-bright-mint/20">
+        <div
+            class="w-full max-w-md bg-pearl-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-soft-mint/30 overflow-hidden">
+            <div class="p-8 text-center">
+                <div class="mb-6">
+                    <h1 class="text-3xl font-bold text-deep-green opacity-90 mb-4">
+                        {% trans "Sign Out" %}
+                    </h1>
+
+                    <p class="text-deep-green/70 mb-6">
+                        {% trans 'Are you sure you want to sign out?' %}
+                    </p>
+                </div>
+
+                {% url 'account_logout' as action_url %}
+                <form method="post" action="{{ action_url }}" class="space-y-6">
+                    {% csrf_token %}
+                    {{ redirect_field }}
+
+                    <div class="flex justify-center space-x-4">
+                        <a href="{% url 'account_login' %}"
+                            class="px-4 py-2 border border-bright-mint/30 rounded-md text-deep-green hover:bg-soft-mint/20 transition duration-300">
+                            {% trans "Cancel" %}
+                        </a>
+
+                        <button type="submit"
+                            class="px-4 py-2 bg-deep-green text-pearl-white rounded-md hover:bg-bright-mint focus:outline-none focus:ring-2 focus:ring-soft-mint transition duration-300">
+                            {% trans 'Sign Out' %}
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-6 text-sm text-deep-green/50">
+                    <p>
+                        {% trans "You are about to log out of your account." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock content %}
+
+</body>
+
+</html>

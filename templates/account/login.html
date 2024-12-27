@@ -1,0 +1,137 @@
+{% load i18n %}
+{% load account socialaccount %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'deep-green': '#008862',
+                        'mint-white': '#eafff6',
+                        'bright-mint': '#5df8bf',
+                        'soft-mint': '#9dfdd4',
+                        'pearl-white': '#f8f8f8'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-mint-white">
+
+
+
+    {% block content %}
+    <div
+        class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-deep-green/10 to-bright-mint/20">
+        <div
+            class="w-full max-w-md bg-pearl-white/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-soft-mint/30 overflow-hidden">
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-bold text-deep-green opacity-90">
+                        {% trans "Welcome Back" %}
+                    </h2>
+                    <p class="text-sm text-deep-green/70 mt-2">
+                        {% trans "Sign in to continue" %}
+                    </p>
+                </div>
+
+                <form method="POST" action="{% url 'account_login' %}" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div>
+                        <label for="id_login" class="block text-sm font-medium text-deep-green/80">
+                            {% trans "Email or Username" %}
+                        </label>
+                        <input type="text" name="login" id="id_login" required
+                            class="mt-1 block w-full px-3 py-2 bg-soft-mint/20 border border-bright-mint/30 text-deep-green rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-bright-mint/50 transition duration-300">
+                    </div>
+
+                    <div>
+                        <label for="id_password" class="block text-sm font-medium text-deep-green/80">
+                            {% trans "Password" %}
+                        </label>
+                        <input type="password" name="password" id="id_password" required
+                            class="mt-1 block w-full px-3 py-2 bg-soft-mint/20 border border-bright-mint/30 text-deep-green rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-bright-mint/50 transition duration-300">
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="remember" id="id_remember"
+                                class="h-4 w-4 text-bright-mint focus:ring-soft-mint border-deep-green/30 rounded">
+                            <label for="id_remember" class="ml-2 block text-sm text-deep-green/70">
+                                {% trans "Remember Me" %}
+                            </label>
+                        </div>
+
+                        <div class="text-sm">
+                            <a href="{% url 'account_reset_password' %}"
+                                class="font-medium text-deep-green/70 hover:text-bright-mint transition duration-300">
+                                {% trans "Forgot password?" %}
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-pearl-white bg-deep-green hover:bg-bright-mint focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-soft-mint transition duration-300">
+                            {% trans "Sign In" %}
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-6">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-bright-mint/30"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-pearl-white text-deep-green/70">
+                                {% trans "Or continue with" %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-3 gap-3">
+                        {# get_providers as socialaccount_providers #}
+                        {# for provider in socialaccount_providers #}
+                        <div>
+                            <a href="{# provider_login_url provider.id #}"
+                                class="w-full inline-flex justify-center py-2 px-4 border border-bright-mint/30 rounded-md shadow-sm bg-soft-mint/10 text-sm font-medium text-deep-green hover:bg-soft-mint/20 transition duration-300">
+                                {{ provider.name }}
+                            </a>
+                        </div>
+                        {# endfor #}
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <p class="text-sm text-deep-green/70">
+                            {% trans "Don't have an account?" %}
+                            <a href="{% url 'account_signup' %}"
+                                class="font-medium text-deep-green hover:text-bright-mint transition duration-300">
+                                {% trans "Sign up" %}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
+</body>
+
+</html>

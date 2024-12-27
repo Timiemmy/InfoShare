@@ -1,0 +1,140 @@
+{% load i18n %}
+{% load allauth %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Icons (Optional) -->
+    <link href="https://cdn.jsdelivr.net/npm/heroicons@2.0.18/dist/heroicons.min.css" rel="stylesheet">
+
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'deep-green': '#008862',
+                        'mint-white': '#eafff6',
+                        'bright-mint': '#5df8bf',
+                        'soft-mint': '#9dfdd4',
+                        'pearl-white': '#f8f8f8'
+                    },
+                    keyframes: {
+                        'email-bounce': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        'pulse-green': {
+                            '0%, 100%': {
+                                transform: 'scale(1)',
+                                opacity: '1'
+                            },
+                            '50%': {
+                                transform: 'scale(1.05)',
+                                opacity: '0.8'
+                            }
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    },
+                    animation: {
+                        'email-bounce': 'email-bounce 1s ease-in-out',
+                        'pulse-green': 'pulse-green 2s infinite',
+                        'float': 'float 3s ease-in-out infinite'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-pearl-white">
+
+  
+
+    {% block head_title %}
+    {% trans "Verify Your Email Address" %}
+    {% endblock head_title %}
+
+    {% block content %}
+    <div class="min-h-screen flex items-center justify-center p-4 bg-mint-white/50">
+        <div
+            class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-soft-mint/30 overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+            <div class="p-8 text-center">
+                <!-- Email Verification Icon -->
+                <div class="flex justify-center mb-6">
+                    <div
+                        class="w-24 h-24 bg-soft-mint/30 rounded-full flex items-center justify-center animate-pulse-green">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-deep-green animate-email-bounce"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <h1 class="text-3xl font-bold text-deep-green mb-4 animate-float">
+                    {% trans "Verify Your Email" %}
+                </h1>
+
+                <div class="text-deep-green/80 mb-6 space-y-4">
+                    <p class="text-sm leading-relaxed">
+                        {% blocktrans %}We've sent a verification email to your inbox. Please follow these steps:{%endblocktrans %}
+                    </p>
+
+                    <ul class="text-left list-disc list-inside text-sm space-y-2">
+                        <li class="transition hover:translate-x-2 hover:text-bright-mint duration-300">
+                            {% trans "Check your email inbox" %}
+                        </li>
+                        <li class="transition hover:translate-x-2 hover:text-bright-mint duration-300">
+                            {% trans "Look for an email from our domain" %}
+                        </li>
+                        <li class="transition hover:translate-x-2 hover:text-bright-mint duration-300">
+                            {% trans "Click the verification link" %}
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-soft-mint/20 p-4 rounded-lg border border-bright-mint/30">
+                    <p class="text-sm text-deep-green/70 mb-4">
+                        {% trans "Didn't receive the email?" %}
+                    </p>
+
+                    <div class="space-y-3">
+                        <button
+                            class="w-full py-2 bg-deep-green text-white rounded-md hover:bg-bright-mint transition duration-300 group">
+                            <span class="group-hover:scale-105 transition duration-300">
+                                {% trans "Resend Verification Email" %}
+                            </span>
+                        </button>
+
+                        <a href="{% url 'account_email' %}"
+                            class="block w-full py-2 border border-deep-green text-deep-green rounded-md hover:bg-soft-mint/20 transition duration-300">
+                            {% trans "Change Email Address" %}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-6 text-sm text-deep-green/60">
+                    <p>
+                        {% trans "Having trouble? Contact our support team." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock content %}
+
+</body>
+
+</html>
