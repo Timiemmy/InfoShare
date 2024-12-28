@@ -57,10 +57,17 @@ def blog_detail(request, slug):
 
     comments = Comment.objects.filter(post=posts).order_by('-created_at')
 
+    def calculate_reading_time(text):
+        words = len(text.split())
+        return max(1, round(words / 200))
+    
+    reading_time = calculate_reading_time(posts.content)
+
     context = {
         'posts': posts,
         'category': category,
         'comments': comments,
+        'reading_time': reading_time,
     }
     return render(request, 'blog_detail.html', context)
 
@@ -129,3 +136,25 @@ def delete_post(request, pk):
     blog = Blog.objects.get(pk=pk)
     blog.delete()
     return redirect('home')
+
+
+def blog_single(request):
+
+    return render(request, 'blog-single-alt.html')
+
+def classic(request):
+
+    return render(request, 'classic.html')
+
+def minimal(request):
+
+    return render(request, 'minimal.html')
+
+def personal(request):
+
+    return render(request, 'personal.html')
+
+
+def personal_alt(request):
+
+    return render(request, 'personal-alt.html')

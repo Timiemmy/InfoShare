@@ -1,94 +1,11 @@
-<!DOCTYPE html>
-<html lang="en-US">
+{% extends "base.html" %}
+{% load static %}
 
-<!-- Mirrored from maanjaa.com/themeger/katen-demo/html/minimal.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 03 Jul 2021 05:09:02 GMT -->
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<title>Katen - Minimal Blog & Magazine HTML Theme</title>
-	<meta name="description" content="Katen - Minimal Blog & Magazine HTML Theme">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	<link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
+{% block header %}
+{% include 'header.html' %}
+{% endblock %}
 
-	<!-- STYLES -->
-	<link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" media="all">
-	<link rel="stylesheet" href="css/all.min.css" type="text/css" media="all">
-	<link rel="stylesheet" href="css/slick.css" type="text/css" media="all">
-	<link rel="stylesheet" href="css/simple-line-icons.css" type="text/css" media="all">
-	<link rel="stylesheet" href="css/style.css" type="text/css" media="all">
-
-	<!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-</head>
-
-<body>
-
-<!-- preloader -->
-<div id="preloader">
-	<div class="book">
-		<div class="inner">
-			<div class="left"></div>
-			<div class="middle"></div>
-			<div class="right"></div>
-		</div>
-		<ul>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-			<li></li>
-		</ul>
-	</div>
-</div>
-
-<!-- site wrapper -->
-<div class="site-wrapper">
-
-	<div class="main-overlay"></div>
-
-    <div class="container-xl">
-        <!-- header -->
-        <header class="header-minimal">
-            
-            <div class="row align-items-center">
-
-                <div class="col-4">
-                    <button class="burger-menu icon-button">
-                        <span class="burger-icon"></span>
-                    </button>
-                </div>
-
-                <div class="col-4 text-center">
-                    <!-- site logo -->
-                    <a class="navbar-brand" href="minimal.html"><img src="images/logo.svg" alt="logo" /></a> 
-                </div>
-
-                <div class="col-4">
-                    <button class="search icon-button float-end">
-                        <i class="icon-magnifier"></i>
-                    </button>
-                </div>
-
-            </div>
-
-        </header>
-    </div>
-
+{% block body %}
 	<!-- section main content -->
 	<section class="main-content-lg">
         <div class="container-minimal">
@@ -331,7 +248,7 @@
 			</div>
 		</div>
 	</div>
-
+{% endblock %}
 	<!-- footer -->
 	<footer>
 		<div class="container-xl">

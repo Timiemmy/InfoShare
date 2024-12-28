@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load blog_tags %}
 
 {% block title %}
 {{ posts.title}}
@@ -32,6 +33,8 @@
 							<ul class="meta list-inline mb-0">
 								<li class="list-inline-item"><a href="#">Created</a></li>
 								<li class="list-inline-item">{{posts.created_at}}</li>
+								<li class="list-inline-item"><i class="fas fa-clock text-primary me-2"></i><span>{{ posts.content|reading_time }} min read</span></li>
+								
 								
 							</ul>
 						</div>

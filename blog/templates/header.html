@@ -13,10 +13,11 @@
                         <a class="nav-link dropdown-toggle" href="{% url 'home' %}">Home</a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'dashboard' %}">Dashboard</a></li>
-                            <li><a class="dropdown-item" href="personal.html">Personal</a></li>
-                            <li><a class="dropdown-item" href="personal-alt.html">Personal Alt</a></li>
-                            <li><a class="dropdown-item" href="minimal.html">Minimal</a></li>
-                            <li><a class="dropdown-item" href="classic.html">Classic</a></li>
+                            <li><a class="dropdown-item" href="{% url 'personal' %}">Personal</a></li>
+                            <li><a class="dropdown-item" href="{% url 'personal_alt' %}">My Blogs</a></li>
+                            <li><a class="dropdown-item" href="{% url 'minimal' %}">Search</a></li>
+                            <li><a class="dropdown-item" href="{% url 'classic' %}">Classic</a></li>
+                            <li><a class="dropdown-item" href="{% url 'blog_single' %}">BlogSingle</a></li>
                         </ul>
                     </li>
                     {% for post in category %}
@@ -55,6 +56,9 @@
             <div class="header-right">
                 <!-- header buttons -->
                 <div class="header-buttons">
+                    <button class="login icon-button">
+                        <i class="icon-magnifier"></i>
+                    </button>
                     <button class="search icon-button">
                         <i class="icon-magnifier"></i>
                     </button>
