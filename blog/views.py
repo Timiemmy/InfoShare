@@ -1,11 +1,12 @@
-from django.views.generic.edit import DeleteView
-from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import JsonResponse, HttpResponseRedirect
+from django.contrib import messages
+from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from django.db.models import Count
+from django.contrib.postgres.search import SearchVector
 from .models import Blog, Category, Comment
-from .forms import BlogForm
+from .forms import BlogForm, SearchForm
 
 
 # Create your views here.
@@ -50,12 +51,50 @@ def category(request, slug):
     return render(request, 'category.html', context)
 
 
-def blog_detail(request, slug):
+def create_post(request):
+
+    if request.method == 'POST':
+        form = BlogForm(request.POST, request.FILES)
+        if form.is_valid():
+            blog = form.save(commit=False)
+            blog.author = request.user
+            blog.created_at = timezone.now()
+            blog.save()
+            return redirect('blog_detail', slug=blog.slug)
+        else:
+            print(form.errors)
+    else:
+        form = BlogForm()
+    return render(request, 'create_post.html', {'form': form})
+
+
+
+def blog_like(request, post_slug):
+    post = get_object_or_404(Blog, slug=post_slug)
+
+    if request.user.is_authenticated:
+        if post.likes.filter(id=request.user.id).exists():
+            post.likes.remove(request.user)
+        else:
+            post.likes.add(request.user)
+
+        return HttpResponseRedirect(reverse('blog_detail', args=[str(post_slug)]))
+
+    return HttpResponseRedirect({'error': 'User not authenticated'}, status=401)
+
+
+def blog_detail(request, year, month, day, slug):
     # posts = Blog.objects.order_by('-id')
-    category = Category.objects.all()
-    posts = get_object_or_404(Blog, slug=slug)
+    category = Category.objects.annotate(post_count=Count('category'))
+    posts = get_object_or_404(Blog, slug=slug, created_at__year=year, created_at__month=month, created_at__day=day)
 
     comments = Comment.objects.filter(post=posts).order_by('-created_at')
+
+    liked = False
+    if request.user.is_authenticated and posts.likes.filter(id=request.user.id).exists():
+        liked = True
+
+    
 
     def calculate_reading_time(text):
         words = len(text.split())
@@ -68,8 +107,10 @@ def blog_detail(request, slug):
         'category': category,
         'comments': comments,
         'reading_time': reading_time,
+        'likes': liked,
+        'total_likes':posts.total_likes(),
     }
-    return render(request, 'blog_detail.html', context)
+    return render(request, 'blog-single-alt.html', context)
 
 
 def add_comment(request, slug):
@@ -98,21 +139,17 @@ def add_comment(request, slug):
     return redirect('blog_detail')
 
 
-def create_post(request):
+def blog_search(request):
+    form = SearchForm
+    query = None
+    results = []
 
-    if request.method == 'POST':
-        form = BlogForm(request.POST, request.FILES)
+    if 'query' in request.GET:
+        form = SearchForm(request.GET)
         if form.is_valid():
-            blog = form.save(commit=False)
-            blog.author = request.user
-            blog.created_at = timezone.now()
-            blog.save()
-            return redirect('blog_detail', slug=blog.slug)
-        else:
-            print(form.errors)
-    else:
-        form = BlogForm()
-    return render(request, 'create_post.html', {'form': form})
+            query = form.cleaned_data['query']
+            results = Blog.published.annotate(search=SearchVector('title')).filter(search=query)
+    return render(request, 'search.html', {'form': form, 'query' : query, 'results' : results})
 
 
 def edit_post(request, slug):
@@ -138,17 +175,9 @@ def delete_post(request, pk):
     return redirect('home')
 
 
-def blog_single(request):
-
-    return render(request, 'blog-single-alt.html')
-
 def classic(request):
 
     return render(request, 'classic.html')
-
-def minimal(request):
-
-    return render(request, 'minimal.html')
 
 def personal(request):
 

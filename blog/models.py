@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.utils.text import slugify
 from django.utils import timezone
 from django.conf import settings
@@ -53,7 +54,14 @@ class Blog(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.title} - {self.category}"
+        return f"{self.title} - {self.category} - {self.likes}"
+
+    def get_absolute_url(self):
+        return reverse('blog_detail', args=
+                       [self.created_at.year,
+                        self.created_at.month,
+                        self.created_at.day,
+                        self.slug])
 
     def total_likes(self):
         return self.likes.count()

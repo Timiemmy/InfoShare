@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
+{% load blog_tags %}
+
+{% block title %}
+{{ posts.title}}
+{% endblock %}
 
 {% block header %}
 {% include 'header.html' %}
@@ -7,26 +12,25 @@
 
 {% block body %}
 	<!-- cover header -->
-    <section class="single-cover data-bg-image" data-bg-image="images/posts/single-cover.jpg">
+    <section class="single-cover data-bg-image" data-bg-image="{{posts.image.url}}">
 
         <div class="container-xl">
 
             <div class="cover-content post">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#">Inspiration</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">3 Easy Ways To Make Your iPhone Faster</li>
+                        <li class="breadcrumb-item active" aria-current="page">{{posts.category}}</li>
                     </ol>
                 </nav>
 
                 <!-- post header -->
                 <div class="post-header">
-                    <h1 class="title mt-0 mb-3">3 Easy Ways To Make Your iPhone Faster</h1>
+                    <h1 class="title mt-0 mb-3">{{posts.title}}</h1>
                     <ul class="meta list-inline mb-0">
-                        <li class="list-inline-item"><a href="#"><img src="images/other/author-sm.png" class="author" alt="author"/>Katen Doe</a></li>
+                        <li class="list-inline-item"><a href="#">{{ posts.author.first_name}} {{ posts.author.last_name}}</a></li>
                         <li class="list-inline-item"><a href="#">Trending</a></li>
-                        <li class="list-inline-item">29 March 2021</li>
+                        <li class="list-inline-item">Published: {{posts.created_at}}</li>
+						<li class="list-inline-item">{{ posts.content|reading_time }} min read</li>
                     </ul>
                 </div>
             </div>
@@ -46,38 +50,14 @@
                     <div class="post post-single">
 						<!-- post content -->
 						<div class="post-content clearfix">
-							<p>The European languages are members of the same family. Their separate existence is a myth. For science, music, sport, etc, Europe uses the same <a href="#">vocabulary</a>. The languages only differ in their grammar, their pronunciation and their most common words.</p>
-
-							<p>Everyone realizes why a new common language would be desirable: one could refuse to pay expensive translators. To achieve this, it <mark>would be</mark> necessary to have uniform grammar, pronunciation and more common words.</p>
-
-							<figure class="figure">
-								<img src="images/posts/post-lg-2.jpg" class="figure-img img-fluid rounded" alt="...">
-								<figcaption class="figure-caption text-center">A caption for the above image.</figcaption>
-							</figure>
-
-							<p>The languages only differ in their grammar, their pronunciation and their most common words. Everyone realizes why a new common language would be desirable.</p> 
-							
-							<img src="images/posts/single-sm-1.jpg" class="rounded alignleft" alt="...">
-							<p>One could refuse to pay expensive translators. To achieve this, it would be necessary to have uniform grammar, pronunciation and more common words.</p>
-
-							<p>If several languages coalesce, the grammar of the resulting language is more simple and regular than that of the individual languages. The new common language will be more simple and regular than the existing <a href="#">European languages</a>. It will be as simple as Occidental; in fact, it will be Occidental.</p>
-
-							<p>A collection of textile samples lay spread out on the table - Samsa was a travelling salesman - and above it there hung a picture that he had recently cut out of an illustrated magazine and housed in a nice, gilded frame.</p>
-
-							<h4>I should be incapable of drawing a single stroke</h4>
-
-							<ul>
-								<li>How about if I sleep a little bit</li>
-								<li>A collection of textile samples lay spread out</li>
-								<li>His many legs, pitifully thin compared with</li>
-								<li>He lay on his armour-like back</li>
-								<li> Gregor Samsa woke from troubled dreams</li>
-							</ul>
-
-							<p>To an English person, it will seem like simplified <a href="#">English</a>, as a skeptical Cambridge friend of mine told me what Occidental is. The European languages are members of the same family. Their separate existence is a myth. For science, music, sport, etc, Europe uses the same vocabulary.</p>
+							<p>{{posts.content}}</p>
 						</div>
 						<!-- post bottom section -->
 						<div class="post-bottom">
+							{% if request.user == posts.author %}
+							<a class="btn btn-primary btn-lg" href="{% url 'edit_post' slug=posts.slug %}" role="button">Edit</a>
+							<a class="btn btn-secondary btn-lg" href="{% url 'delete_post' pk=posts.pk %}" role="button">Delete</a>
+							{% endif %}
 							<div class="row d-flex align-items-center">
 								<div class="col-md-6 col-12 text-center text-md-start">
 									<!-- tags -->
@@ -101,16 +81,70 @@
 
                     </div>
 
+					<!-- Like/Unlike Section -->
+					<div class="d-flex align-items-center">
+						{% if user.is_authenticated %}
+						<form method="post" action="{% url 'post_like' post_slug=posts.slug %}">
+							{% csrf_token %}
+							{% if user in posts.likes.all %}
+							<button type="submit" name="post_slug" value="{{posts.slug}}" class="btn btn-link text-danger p-0 me-2 unlike-btn">
+								<i class="bi bi-heart-fill fs-4"></i> Unlike
+							</button>
+							{% else %}
+							<button type="submit" name="post_slug" value="{{posts.slug}}" class="btn btn-link text-secondary p-0 me-2 like-btn">
+								<i class="bi bi-heart fs-4"></i> Like
+							</button>
+							{% endif %}
+						</form>
+						{% else %}
+						<!-- Like button that triggers modal for unauthenticated users -->
+						<button class="btn btn-link text-secondary p-0 me-2" data-bs-toggle="modal" data-bs-target="#authModal">
+							<i class="bi bi-heart fs-4"></i>
+						</button>
+						{% endif %}
+					
+						<div class="likes-count">
+							<span class="badge bg-secondary">
+								{{ posts.total_likes }} like {{ number_of_likes|pluralize }}
+							</span>
+						</div>
+					</div>
+					
+					<!-- Authentication Modal -->
+					<div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<h5 class="modal-title" id="authModalLabel">Authentication Required</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+								</div>
+								<div class="modal-body">
+									<p>Please login or create an account to like posts.</p>
+								</div>
+								<div class="modal-footer">
+									<a href="{% url 'account_login' %}" class="btn btn-primary">
+										<i class="bi bi-box-arrow-in-right"></i> Login
+									</a>
+									<a href="{% url 'account_signup' %}" class="btn btn-success">
+										<i class="bi bi-person-plus"></i> Register
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+
 					<div class="spacer" data-height="50"></div>
 
 					<div class="about-author padding-30 rounded">
 						<div class="thumb">
-							<img src="images/other/avatar-about.png" alt="Katen Doe" />
+							<img src="{% static 'images/Headshot.jpg' %}" alt="{{post.author.first_name}}" />
 						</div>
 						<div class="details">
-							<h4 class="name"><a href="#">Katen Doe</a></h4>
-							<p>Hello, I’m a content writer who is fascinated by content fashion, celebrity and lifestyle. She helps clients bring the right content to the right people.</p>
-							<!-- social icons -->
+							<h4 class="name"><a href="#">{{ posts.author.first_name}} {{ posts.author.last_name}}</a></h4>
+							<p>{{ posts.author.bio | truncatewords:100}}</p>
+								<!-- social icons -->
 							<ul class="social-icons list-unstyled list-inline mb-0">
 								<li class="list-inline-item"><a href="#"><i class="fab fa-facebook-f"></i></a></li>
 								<li class="list-inline-item"><a href="#"><i class="fab fa-twitter"></i></a></li>
@@ -126,49 +160,28 @@
 
 					<!-- section header -->
 					<div class="section-header">
-						<h3 class="section-title">Comments (3)</h3>
+						<h3 class="section-title">Comments ({{comments.count}})</h3>
 						<img src="images/wave.svg" class="wave" alt="wave" />
 					</div>
 					<!-- post comments -->
 					<div class="comments bordered padding-30 rounded">
 
 						<ul class="comments">
+							{% for comment in comments %}
 							<!-- comment item -->
 							<li class="comment rounded">
 								<div class="thumb">
-									<img src="images/other/comment-1.png" alt="John Doe" />
+									<img src="{%static 'images/other/comment-1.png' %}" alt="{{comment.name}}" />
 								</div>
 								<div class="details">
-									<h4 class="name"><a href="#">John Doe</a></h4>
-									<span class="date">Jan 08, 2021 14:41 pm</span>
-									<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam vitae odio ut tortor fringilla cursus sed quis odio.</p>
+									<h4 class="name"><a href="#">{{comment.name}}</a></h4>
+									<span class="date">{{comment.created_at}}</span>
+									<p>{{comment.content}}</p>
 									<a href="#" class="btn btn-default btn-sm">Reply</a>
 								</div>
 							</li>
-							<!-- comment item -->
-							<li class="comment child rounded">
-								<div class="thumb">
-									<img src="images/other/comment-2.png" alt="John Doe" />
-								</div>
-								<div class="details">
-									<h4 class="name"><a href="#">Helen Doe</a></h4>
-									<span class="date">Jan 08, 2021 14:41 pm</span>
-									<p>Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum.</p>
-									<a href="#" class="btn btn-default btn-sm">Reply</a>
-								</div>
-							</li>
-							<!-- comment item -->
-							<li class="comment rounded">
-								<div class="thumb">
-									<img src="images/other/comment-3.png" alt="John Doe" />
-								</div>
-								<div class="details">
-									<h4 class="name"><a href="#">Anna Doe</a></h4>
-									<span class="date">Jan 08, 2021 14:41 pm</span>
-									<p>Cras ultricies mi eu turpis hendrerit fringilla. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia.</p>
-									<a href="#" class="btn btn-default btn-sm">Reply</a>
-								</div>
-							</li>
+							{% endfor %}
+							
 						</ul>
 					</div>
 
@@ -247,7 +260,7 @@
 						<!-- widget popular posts -->
 						<div class="widget rounded">
 							<div class="widget-header text-center">
-								<h3 class="widget-title">Popular Posts</h3>
+								<h3 class="widget-title">Similar Posts</h3>
 								<img src="images/wave.svg" class="wave" alt="wave" />
 							</div>
 							<div class="widget-content">
@@ -313,12 +326,9 @@
 							</div>
 							<div class="widget-content">
 								<ul class="list">
-									<li><a href="#">Lifestyle</a><span>(5)</span></li>
-									<li><a href="#">Inspiration</a><span>(2)</span></li>
-									<li><a href="#">Fashion</a><span>(4)</span></li>
-									<li><a href="#">Politic</a><span>(1)</span></li>
-									<li><a href="#">Trending</a><span>(7)</span></li>
-									<li><a href="#">Culture</a><span>(3)</span></li>
+									{% for cat in category %}
+									<li><a href="#">{{ cat.name }}</a><span>({{cat.post_count}})</span></li>
+									{% endfor %}
 								</ul>
 							</div>
 							
@@ -342,78 +352,8 @@
 							</div>		
 						</div>
 
-						<!-- widget post carousel -->
-						<div class="widget rounded">
-							<div class="widget-header text-center">
-								<h3 class="widget-title">Celebration</h3>
-								<img src="images/wave.svg" class="wave" alt="wave" />
-							</div>
-							<div class="widget-content">
-								<div class="post-carousel-widget">
-									<!-- post -->
-									<div class="post post-carousel">
-										<div class="thumb rounded">
-											<a href="category.html" class="category-badge position-absolute">How to</a>
-											<a href="blog-single.html">
-												<div class="inner">
-													<img src="images/widgets/widget-carousel-1.jpg" alt="post-title" />
-												</div>
-											</a>
-										</div>
-										<h5 class="post-title mb-0 mt-4"><a href="blog-single.html">5 Easy Ways You Can Turn Future Into Success</a></h5>
-										<ul class="meta list-inline mt-2 mb-0">
-											<li class="list-inline-item"><a href="#">Katen Doe</a></li>
-											<li class="list-inline-item">29 March 2021</li>
-										</ul>
-									</div>
-									<!-- post -->
-									<div class="post post-carousel">
-										<div class="thumb rounded">
-											<a href="category.html" class="category-badge position-absolute">Trending</a>
-											<a href="blog-single.html">
-												<div class="inner">
-													<img src="images/widgets/widget-carousel-2.jpg" alt="post-title" />
-												</div>
-											</a>
-										</div>
-										<h5 class="post-title mb-0 mt-4"><a href="blog-single.html">Master The Art Of Nature With These 7 Tips</a></h5>
-										<ul class="meta list-inline mt-2 mb-0">
-											<li class="list-inline-item"><a href="#">Katen Doe</a></li>
-											<li class="list-inline-item">29 March 2021</li>
-										</ul>
-									</div>
-									<!-- post -->
-									<div class="post post-carousel">
-										<div class="thumb rounded">
-											<a href="category.html" class="category-badge position-absolute">How to</a>
-											<a href="blog-single.html">
-												<div class="inner">
-													<img src="images/widgets/widget-carousel-1.jpg" alt="post-title" />
-												</div>
-											</a>
-										</div>
-										<h5 class="post-title mb-0 mt-4"><a href="blog-single.html">5 Easy Ways You Can Turn Future Into Success</a></h5>
-										<ul class="meta list-inline mt-2 mb-0">
-											<li class="list-inline-item"><a href="#">Katen Doe</a></li>
-											<li class="list-inline-item">29 March 2021</li>
-										</ul>
-									</div>
-								</div>
-								<!-- carousel arrows -->
-								<div class="slick-arrows-bot">
-									<button type="button" data-role="none" class="carousel-botNav-prev slick-custom-buttons" aria-label="Previous"><i class="icon-arrow-left"></i></button>
-									<button type="button" data-role="none" class="carousel-botNav-next slick-custom-buttons" aria-label="Next"><i class="icon-arrow-right"></i></button>
-								</div>
-							</div>		
-						</div>
+						
 
-						<!-- widget advertisement -->
-						<div class="widget no-container rounded text-md-center">
-							<span class="ads-title">- Sponsored Ad -</span>
-							<a href="#" class="widget-ads">
-								<img src="images/ads/ad-360.png" alt="Advertisement" />	
-							</a>
-						</div>
 
 						<!-- widget tags -->
 						<div class="widget rounded">
@@ -439,157 +379,39 @@
 		</div>
 	</section>
 
-	<!-- instagram feed -->
-	<div class="instagram">
-		<div class="container-xl">
-			<!-- button -->
-			<a href="#" class="btn btn-default btn-instagram">@Katen on Instagram</a>
-			<!-- images -->
-			<div class="instagram-feed d-flex flex-wrap">
-				<div class="insta-item col-sm-2 col-6 col-md-2">
-					<a href="#">
-						<img src="images/insta/insta-1.jpg" alt="insta-title" />
-					</a>
-				</div>
-				<div class="insta-item col-sm-2 col-6 col-md-2">
-					<a href="#">
-						<img src="images/insta/insta-2.jpg" alt="insta-title" />
-					</a>
-				</div>
-				<div class="insta-item col-sm-2 col-6 col-md-2">
-					<a href="#">
-						<img src="images/insta/insta-3.jpg" alt="insta-title" />
-					</a>
-				</div>
-				<div class="insta-item col-sm-2 col-6 col-md-2">
-					<a href="#">
-						<img src="images/insta/insta-4.jpg" alt="insta-title" />
-					</a>
-				</div>
-				<div class="insta-item col-sm-2 col-6 col-md-2">
-					<a href="#">
-						<img src="images/insta/insta-5.jpg" alt="insta-title" />
-					</a>
-				</div>
-				<div class="insta-item col-sm-2 col-6 col-md-2">
-					<a href="#">
-						<img src="images/insta/insta-6.jpg" alt="insta-title" />
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
+
+	<!--Ajax-->
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const likeBtn = document.getElementById('like-btn');
+			if (likeBtn) {
+				likeBtn.addEventListener('click', function () {
+					const url = likeBtn.getAttribute('data-url');
+					fetch(url, {
+						method: 'POST',
+						headers: {
+							'X-CSRFToken': '{{ csrf_token }}',
+							'Content-Type': 'application/json'
+						},
+					})
+						.then(response => response.json())
+						.then(data => {
+							if (data.liked !== undefined) {
+								// Update like button icon and class
+								likeBtn.classList.toggle('text-danger', data.liked);
+								likeBtn.classList.toggle('text-secondary', !data.liked);
+								likeBtn.querySelector('i').className = data.liked ? 'bi bi-heart-fill fs-4' : 'bi bi-heart fs-4';
+
+								// Update likes count
+								const likesCount = document.getElementById('likes-count');
+								likesCount.innerHTML = `<span class="badge bg-secondary">${data.total_likes} like${data.total_likes === 1 ? '' : 's'}</span>`;
+							}
+						})
+						.catch(error => console.error('Error:', error));
+				});
+			}
+		});
+	</script>
 
 {% endblock %}
-	<!-- footer -->
-	<footer>
-		<div class="container-xl">
-			<div class="footer-inner">
-				<div class="row d-flex align-items-center gy-4">
-					<!-- copyright text -->
-					<div class="col-md-4">
-						<span class="copyright">© 2021 Katen. Template by ThemeGer.</span>
-					</div>
 
-					<!-- social icons -->
-					<div class="col-md-4 text-center">
-						<ul class="social-icons list-unstyled list-inline mb-0">
-							<li class="list-inline-item"><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-							<li class="list-inline-item"><a href="#"><i class="fab fa-twitter"></i></a></li>
-							<li class="list-inline-item"><a href="#"><i class="fab fa-instagram"></i></a></li>
-							<li class="list-inline-item"><a href="#"><i class="fab fa-pinterest"></i></a></li>
-							<li class="list-inline-item"><a href="#"><i class="fab fa-medium"></i></a></li>
-							<li class="list-inline-item"><a href="#"><i class="fab fa-youtube"></i></a></li>
-						</ul>
-					</div>
-
-					<!-- go to top button -->
-					<div class="col-md-4">
-						<a href="#" id="return-to-top" class="float-md-end"><i class="icon-arrow-up"></i>Back to Top</a>
-					</div>
-				</div>
-			</div>
-		</div>
-	</footer>
-
-</div><!-- end site wrapper -->
-
-<!-- search popup area -->
-<div class="search-popup">
-	<!-- close button -->
-	<button type="button" class="btn-close" aria-label="Close"></button>
-	<!-- content -->
-	<div class="search-content">
-		<div class="text-center">
-			<h3 class="mb-4 mt-0">Press ESC to close</h3>
-		</div>
-		<!-- form -->
-		<form class="d-flex search-form">
-			<input class="form-control me-2" type="search" placeholder="Search and press enter ..." aria-label="Search">
-			<button class="btn btn-default btn-lg" type="submit"><i class="icon-magnifier"></i></button>
-		</form>
-	</div>
-</div>
-
-<!-- canvas menu -->
-<div class="canvas-menu d-flex align-items-end flex-column">
-	<!-- close button -->
-	<button type="button" class="btn-close" aria-label="Close"></button>
-
-	<!-- logo -->
-	<div class="logo">
-		<img src="images/logo.svg" alt="Katen" />
-	</div>
-
-	<!-- menu -->
-	<nav>
-		<ul class="vertical-menu">
-			<li class="active">
-				<a href="index.html">Home</a>
-				<ul class="submenu">
-					<li><a href="index.html">Magazine</a></li>
-					<li><a href="personal.html">Personal</a></li>
-					<li><a href="personal-alt.html">Personal Alt</a></li>
-					<li><a href="minimal.html">Minimal</a></li>
-					<li><a href="classic.html">Classic</a></li>
-				</ul>
-			</li>
-			<li><a href="category.html">Lifestyle</a></li>
-			<li><a href="category.html">Inspiration</a></li>
-			<li>
-				<a href="#">Pages</a>
-				<ul class="submenu">
-					<li><a href="category.html">Category</a></li>
-					<li><a href="blog-single.html">Blog Single</a></li>
-					<li><a href="blog-single-alt.html">Blog Single Alt</a></li>
-					<li><a href="about.html">About</a></li>
-					<li><a href="contact.html">Contact</a></li>
-				</ul>
-			</li>
-			<li><a href="contact.html">Contact</a></li>
-		</ul>
-	</nav>
-
-	<!-- social icons -->
-	<ul class="social-icons list-unstyled list-inline mb-0 mt-auto w-100">
-		<li class="list-inline-item"><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-		<li class="list-inline-item"><a href="#"><i class="fab fa-twitter"></i></a></li>
-		<li class="list-inline-item"><a href="#"><i class="fab fa-instagram"></i></a></li>
-		<li class="list-inline-item"><a href="#"><i class="fab fa-pinterest"></i></a></li>
-		<li class="list-inline-item"><a href="#"><i class="fab fa-medium"></i></a></li>
-		<li class="list-inline-item"><a href="#"><i class="fab fa-youtube"></i></a></li>
-	</ul>
-</div>
-
-<!-- JAVA SCRIPTS -->
-<script src="js/jquery.min.js"></script>
-<script src="js/popper.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/slick.min.js"></script>
-<script src="js/jquery.sticky-sidebar.min.js"></script>
-<script src="js/custom.js"></script>
-
-</body>
-
-<!-- Mirrored from maanjaa.com/themeger/katen-demo/html/blog-single-alt.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 03 Jul 2021 05:09:08 GMT -->
-</html>
