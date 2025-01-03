@@ -84,32 +84,28 @@
 					<!-- Like/Unlike Section -->
 					<div class="d-flex align-items-center">
 						{% if user.is_authenticated %}
-						<form method="post" action="{% url 'post_like' post_slug=posts.slug %}">
-							{% csrf_token %}
+						<div class="like-section" data-post-slug="{{posts.slug}}">
 							{% if user in posts.likes.all %}
-							<button type="submit" name="post_slug" value="{{posts.slug}}" class="btn btn-link text-danger p-0 me-2 unlike-btn">
+							<button class="btn btn-link text-danger p-0 me-2 unlike-btn">
 								<i class="bi bi-heart-fill fs-4"></i> Unlike
 							</button>
 							{% else %}
-							<button type="submit" name="post_slug" value="{{posts.slug}}" class="btn btn-link text-secondary p-0 me-2 like-btn">
+							<button class="btn btn-link text-secondary p-0 me-2 like-btn">
 								<i class="bi bi-heart fs-4"></i> Like
 							</button>
 							{% endif %}
-						</form>
+						</div>
 						{% else %}
-						<!-- Like button that triggers modal for unauthenticated users -->
 						<button class="btn btn-link text-secondary p-0 me-2" data-bs-toggle="modal" data-bs-target="#authModal">
 							<i class="bi bi-heart fs-4"></i>
 						</button>
 						{% endif %}
-					
 						<div class="likes-count">
 							<span class="badge bg-secondary">
-								{{ posts.total_likes }} like {{ number_of_likes|pluralize }}
+								{{ posts.total_likes }} like{{ posts.total_likes|pluralize }}
 							</span>
 						</div>
 					</div>
-					
 					<!-- Authentication Modal -->
 					<div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
 						<div class="modal-dialog">
@@ -379,39 +375,67 @@
 		</div>
 	</section>
 
-
-	<!--Ajax-->
+	{% block script %}
+	<!-- jQuery for AJAX Request -->
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	
+	<!-- AJAX and Animation Logic -->
 	<script>
-		document.addEventListener('DOMContentLoaded', function () {
-			const likeBtn = document.getElementById('like-btn');
-			if (likeBtn) {
-				likeBtn.addEventListener('click', function () {
-					const url = likeBtn.getAttribute('data-url');
-					fetch(url, {
+		// Add this to your JS file
+			$(document).ready(function () {
+				$('.like-section button').click(function (e) {
+					e.preventDefault();
+					const button = $(this);
+					const postSlug = button.parent().data('post-slug');
+
+					$.ajax({
+						url: `/post/${postSlug}/like/`,
 						method: 'POST',
 						headers: {
-							'X-CSRFToken': '{{ csrf_token }}',
-							'Content-Type': 'application/json'
+							'X-CSRFToken': getCookie('csrftoken')
 						},
-					})
-						.then(response => response.json())
-						.then(data => {
-							if (data.liked !== undefined) {
-								// Update like button icon and class
-								likeBtn.classList.toggle('text-danger', data.liked);
-								likeBtn.classList.toggle('text-secondary', !data.liked);
-								likeBtn.querySelector('i').className = data.liked ? 'bi bi-heart-fill fs-4' : 'bi bi-heart fs-4';
+						success: function (response) {
+							const likesCount = response.likes_count;
+							const isLiked = response.is_liked;
 
-								// Update likes count
-								const likesCount = document.getElementById('likes-count');
-								likesCount.innerHTML = `<span class="badge bg-secondary">${data.total_likes} like${data.total_likes === 1 ? '' : 's'}</span>`;
+							if (isLiked) {
+								button.html('<i class="bi bi-heart-fill fs-4"></i> Unlike')
+									.removeClass('like-btn text-secondary')
+									.addClass('unlike-btn text-danger')
+									.find('i')
+									.addClass('animate__animated animate__bounce');
+							} else {
+								button.html('<i class="bi bi-heart fs-4"></i> Like')
+									.removeClass('unlike-btn text-danger')
+									.addClass('like-btn text-secondary')
+									.find('i')
+									.addClass('animate__animated animate__bounce');
 							}
-						})
-						.catch(error => console.error('Error:', error));
-				});
-			}
-		});
-	</script>
 
-{% endblock %}
+							button.closest('.d-flex').find('.likes-count .badge')
+								.text(`${likesCount} like${likesCount !== 1 ? 's' : ''}`);
+						}
+					});
+				});
+			});
+
+			// CSRF token helper function
+			function getCookie(name) {
+				let cookieValue = null;
+				if (document.cookie && document.cookie !== '') {
+					const cookies = document.cookie.split(';');
+					for (let i = 0; i < cookies.length; i++) {
+						const cookie = cookies[i].trim();
+						if (cookie.substring(0, name.length + 1) === (name + '=')) {
+							cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+							break;
+						}
+					}
+				}
+				return cookieValue;
+			}
+	</script>
+	{% endblock%}
+
+{% endblock body %}
 

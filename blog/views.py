@@ -22,10 +22,10 @@ def home(request):
 
 
 def index(request):
-    post = Blog.objects.order_by('-id')
-    head_post = Blog.objects.order_by('-id').filter(main_post=True)
-    recent = Blog.objects.all().order_by('-created_at')[:5]
-    popular = Blog.objects.filter(section='Popular').order_by('id')[:5]
+    post = Blog.published.order_by('-created_at')
+    head_post = Blog.published.order_by('-id').filter(main_post=True)
+    recent = Blog.published.all().order_by('-created_at')[:5]
+    popular = Blog.published.filter(section='Popular').order_by('id')[:5]
     category = Category.objects.annotate(post_count=Count('category'))
 
     context = {
@@ -78,7 +78,7 @@ def blog_like(request, post_slug):
         else:
             post.likes.add(request.user)
 
-        return HttpResponseRedirect(reverse('blog_detail', args=[str(post_slug)]))
+        return HttpResponseRedirect(reverse('blog_detail', args=[post.created_at.year, post.created_at.month, post.created_at.day, post.slug]))
 
     return HttpResponseRedirect({'error': 'User not authenticated'}, status=401)
 

@@ -4,6 +4,7 @@ from django.utils.text import slugify
 from django.utils import timezone
 from django.conf import settings
 from accounts.models import CustomUser
+from .managers import PublishedManager
 
 
 class Category(models.Model):
@@ -41,12 +42,15 @@ class Blog(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(choices=Status.choices,
                               max_length=2, default=Status.DRAFT)
+    publish = models.DateTimeField(default=timezone.now)
     section = models.CharField(
         choices=SECTION, max_length=10, default=SECTION['Recent'])
     main_post = models.BooleanField(default=False)
     views = models.PositiveBigIntegerField(default=0)
     likes = models.ManyToManyField(
         settings.AUTH_USER_MODEL, related_name='blog_likes', blank=True)
+
+    published = PublishedManager()
 
     def save(self, *args, **kwargs):
         if not self.slug:  # Generate slug only if it is not already set
