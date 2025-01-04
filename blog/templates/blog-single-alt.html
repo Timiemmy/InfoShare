@@ -138,7 +138,7 @@
 							<img src="{% static 'images/Headshot.jpg' %}" alt="{{post.author.first_name}}" />
 						</div>
 						<div class="details">
-							<h4 class="name"><a href="#">{{ posts.author.first_name}} {{ posts.author.last_name}}</a></h4>
+							<h4 class="name"><a href="{% url 'about' username=posts.author.username %}">{{ posts.author.first_name}} {{ posts.author.last_name}}</a></h4>
 							<p>{{ posts.author.bio | truncatewords:100}}</p>
 								<!-- social icons -->
 							<ul class="social-icons list-unstyled list-inline mb-0">

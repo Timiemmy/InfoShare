@@ -68,7 +68,6 @@ def create_post(request):
     return render(request, 'create_post.html', {'form': form})
 
 
-
 def blog_like(request, post_slug):
     post = get_object_or_404(Blog, slug=post_slug)
 
@@ -86,7 +85,8 @@ def blog_like(request, post_slug):
 def blog_detail(request, year, month, day, slug):
     # posts = Blog.objects.order_by('-id')
     category = Category.objects.annotate(post_count=Count('category'))
-    posts = get_object_or_404(Blog, slug=slug, created_at__year=year, created_at__month=month, created_at__day=day)
+    posts = get_object_or_404(
+        Blog, slug=slug, created_at__year=year, created_at__month=month, created_at__day=day)
 
     comments = Comment.objects.filter(post=posts).order_by('-created_at')
 
@@ -94,12 +94,10 @@ def blog_detail(request, year, month, day, slug):
     if request.user.is_authenticated and posts.likes.filter(id=request.user.id).exists():
         liked = True
 
-    
-
     def calculate_reading_time(text):
         words = len(text.split())
         return max(1, round(words / 200))
-    
+
     reading_time = calculate_reading_time(posts.content)
 
     context = {
@@ -108,7 +106,7 @@ def blog_detail(request, year, month, day, slug):
         'comments': comments,
         'reading_time': reading_time,
         'likes': liked,
-        'total_likes':posts.total_likes(),
+        'total_likes': posts.total_likes(),
     }
     return render(request, 'blog-single-alt.html', context)
 
@@ -148,8 +146,9 @@ def blog_search(request):
         form = SearchForm(request.GET)
         if form.is_valid():
             query = form.cleaned_data['query']
-            results = Blog.published.annotate(search=SearchVector('title')).filter(search=query)
-    return render(request, 'search.html', {'form': form, 'query' : query, 'results' : results})
+            results = Blog.published.annotate(
+                search=SearchVector('title')).filter(search=query)
+    return render(request, 'search.html', {'form': form, 'query': query, 'results': results})
 
 
 def edit_post(request, slug):
@@ -178,6 +177,7 @@ def delete_post(request, pk):
 def classic(request):
 
     return render(request, 'classic.html')
+
 
 def personal(request):
 

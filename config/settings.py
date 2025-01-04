@@ -56,7 +56,6 @@ THIRD_PARTY_APPS = [
 CUSTOM_APPS = [
     "accounts",
     "blog",
-    "dashboard",
 ]
 
 
@@ -172,7 +171,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "accounts.CustomUser"
 
-LOGIN_REDIRECT_URL = "dashboard"
+LOGIN_REDIRECT_URL = "home"
 
 LOGOUT_REDIRECT_URL = "home"
 
