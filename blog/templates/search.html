@@ -72,7 +72,11 @@
             
 
             <!-- pagination -->
-            <nav>
+            
+            {% empty %}
+            <p>There are no results for your query.</p>
+            {% endfor %}
+            <nav></nav>
                 <ul class="pagination justify-content-center">
                     <li class="page-item active" aria-current="page">
                         <span class="page-link">1</span>
@@ -81,9 +85,6 @@
                     <li class="page-item"><a class="page-link" href="#">3</a></li>
                 </ul>
             </nav>
-            {% empty %}
-            <p>There are no results for your query.</p>
-            {% endfor %}
             {% else %}
             <h1>Click on the search icon search for posts</h1>
             

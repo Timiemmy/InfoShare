@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy, reverse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.contrib.postgres.search import SearchVector
 from .models import Blog, Category, Comment
 from .forms import BlogForm, SearchForm
@@ -25,8 +25,9 @@ def index(request):
     post = Blog.published.order_by('-created_at')
     head_post = Blog.published.order_by('-id').filter(main_post=True)
     recent = Blog.published.all().order_by('-created_at')[:5]
-    popular = Blog.published.filter(section='Popular').order_by('id')[:5]
+    popular = Blog.published.annotate(like_count=Count('likes')).order_by('-like_count')[:5]
     category = Category.objects.annotate(post_count=Count('category'))
+    most_liked = Blog.published.annotate(like_count=Count('likes')).order_by('-like_count')[:5]
 
     context = {
         'posts': post,
@@ -34,6 +35,7 @@ def index(request):
         'category': category,
         'recent': recent,
         'popular': popular,
+        'most_liked':most_liked,
     }
 
     return render(request, 'index.html', context)
@@ -74,12 +76,16 @@ def blog_like(request, post_slug):
     if request.user.is_authenticated:
         if post.likes.filter(id=request.user.id).exists():
             post.likes.remove(request.user)
+            liked = False
         else:
             post.likes.add(request.user)
+            liked = True
 
-        return HttpResponseRedirect(reverse('blog_detail', args=[post.created_at.year, post.created_at.month, post.created_at.day, post.slug]))
+        #return HttpResponseRedirect(reverse('blog_detail', args=[post.created_at.year, post.created_at.month, post.created_at.day, post.slug]))
+        return JsonResponse({'liked': liked, 'total_likes': post.total_likes()})
 
-    return HttpResponseRedirect({'error': 'User not authenticated'}, status=401)
+    #return HttpResponseRedirect({'error': 'User not authenticated'}, status=401)
+    return JsonResponse({'error': 'User not authenticated'}, status=401)
 
 
 def blog_detail(request, year, month, day, slug):
@@ -94,6 +100,8 @@ def blog_detail(request, year, month, day, slug):
     if request.user.is_authenticated and posts.likes.filter(id=request.user.id).exists():
         liked = True
 
+    similar_posts = Blog.published.filter(category=posts.category).exclude(id=posts.id)[:1]
+
     def calculate_reading_time(text):
         words = len(text.split())
         return max(1, round(words / 200))
@@ -107,6 +115,7 @@ def blog_detail(request, year, month, day, slug):
         'reading_time': reading_time,
         'likes': liked,
         'total_likes': posts.total_likes(),
+        'similar_posts': similar_posts,
     }
     return render(request, 'blog-single-alt.html', context)
 
@@ -174,16 +183,5 @@ def delete_post(request, pk):
     return redirect('home')
 
 
-def classic(request):
-
-    return render(request, 'classic.html')
-
-
-def personal(request):
-
-    return render(request, 'personal.html')
-
-
-def personal_alt(request):
-
-    return render(request, 'personal-alt.html')
+def contact(request):
+    return render(request, 'contact.html')

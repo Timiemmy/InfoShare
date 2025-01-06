@@ -8,6 +8,51 @@
 {% endblock %}
 
 {% block body %}
+	<style>
+		.follow-btn {
+			position: relative;
+			transition: all 0.3s ease;
+			min-width: 100px;
+		}
+	
+		.follow-btn:hover.followed {
+			background-color: #dc3545;
+		}
+	
+		.follow-btn:hover.followed .follow-text:before {
+			content: "Unfollow";
+		}
+	
+		.follow-btn.followed .follow-text {
+			opacity: 1;
+		}
+	
+		.follow-btn.followed:hover .follow-text {
+			opacity: 0;
+		}
+	
+		.follow-btn.followed:hover .follow-text:before {
+			opacity: 1;
+		}
+	
+		@keyframes pulse {
+			0% {
+				transform: scale(1);
+			}
+	
+			50% {
+				transform: scale(1.05);
+			}
+	
+			100% {
+				transform: scale(1);
+			}
+		}
+	
+		.follow-btn.animate {
+			animation: pulse 0.3s ease-in-out;
+		}
+	</style>
     <!-- section hero -->
     <section class="hero data-bg-image d-flex align-items-center" data-bg-image="{{user.image.url}}">
         <div class="container-xl">
@@ -15,7 +60,33 @@
             <div class="cta text-center">
                 <h2 class="mt-0 mb-4">{{user.first_name}} {{ user.last_name }}</h2>
                 <p class="mt-0 mb-4"> {{ user.bio }}</p>
-                <a href="#" class="btn btn-light mt-2">About Me</a>
+				<!-- Template -->
+				<a href="#" id="followers-count" class="btn btn-light mb-4">
+					{{ followers_count }} follower{{followers_count | pluralize }}
+				</a>
+				<a href="#" id="following-count" class="btn btn-light mb-4">
+					{{ following_count }} following{{following_count | pluralize }}
+				</a>
+				
+				{% if request.user.is_authenticated and request.user != user %}
+				<form id="follow-form" data-username="{{ user.username }}">
+					{% csrf_token %}
+					<button type="submit" id="follow-button"
+						class="btn btn-lg {% if is_following %}btn-danger{% else %}btn-primary{% endif %}">
+						<span id="follow-text">
+							{% if is_following %}
+							Unfollow
+							{% else %}
+							Follow
+							{% endif %}
+						</span>
+						<span id="loading-spinner" class="spinner-border spinner-border-sm d-none" role="status">
+							<span class="visually-hidden">Loading...</span>
+						</span>
+					</button>
+				</form>
+				{% endif %}
+				
             </div>
         </div>
         <!-- animated mouse wheel -->
@@ -97,22 +168,6 @@
 
 					<!-- sidebar -->
 					<div class="sidebar">
-						<!-- widget about -->
-						<div class="widget rounded">
-							<div class="widget-about data-bg-image text-center" data-bg-image="images/map-bg.png">
-								<img src="images/logo.svg" alt="logo" class="mb-4" />
-								<p class="mb-4">Hello, We’re content writer who is fascinated by content fashion, celebrity and lifestyle. We helps clients bring the right content to the right people.</p>
-								<ul class="social-icons list-unstyled list-inline mb-0">
-									<li class="list-inline-item"><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-									<li class="list-inline-item"><a href="#"><i class="fab fa-twitter"></i></a></li>
-									<li class="list-inline-item"><a href="#"><i class="fab fa-instagram"></i></a></li>
-									<li class="list-inline-item"><a href="#"><i class="fab fa-pinterest"></i></a></li>
-									<li class="list-inline-item"><a href="#"><i class="fab fa-medium"></i></a></li>
-									<li class="list-inline-item"><a href="#"><i class="fab fa-youtube"></i></a></li>
-								</ul>
-							</div>
-						</div>
-
 						<!-- widget popular posts -->
 						<div class="widget rounded">
 							<div class="widget-header text-center">
@@ -308,4 +363,67 @@
 		</div>
 	</section>
 
+
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const followForm = document.getElementById('follow-form');
+			const followButton = document.getElementById('follow-button');
+			const followText = document.getElementById('follow-text');
+			const loadingSpinner = document.getElementById('loading-spinner');
+			const followersCount = document.getElementById('followers-count');
+			const followingCount = document.getElementById('following-count');
+
+			if (followForm) {
+				followForm.addEventListener('submit', function (e) {
+					e.preventDefault();
+
+					// Disable button and show spinner
+					followButton.disabled = true;
+					followText.classList.add('d-none');
+					loadingSpinner.classList.remove('d-none');
+
+					const username = this.dataset.username;
+					const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+					fetch(`/follow/${username}/`, {
+						method: 'POST',
+						headers: {
+							'X-CSRFToken': csrfToken,
+						},
+						credentials: 'same-origin'
+					})
+						.then(async response => {
+							const data = await response.json();
+							if (!response.ok) {
+								throw new Error(data.error || 'Network response was not ok');
+							}
+							return data;
+						})
+						.then(data => {
+							console.log('Success:', data);  // For debugging
+
+							// Update button state
+							followButton.classList.toggle('btn-primary');
+							followButton.classList.toggle('btn-danger');
+							followText.textContent = data.is_following ? 'Unfollow' : 'Follow';
+
+							// Update counts
+							followersCount.textContent = data.followers_count;
+							followingCount.textContent = data.following_count;
+						})
+						.catch(error => {
+							console.error('Error details:', error);  // For debugging
+							alert(`Error: ${error.message}`);
+						})
+						.finally(() => {
+							// Re-enable button and hide spinner
+							followButton.disabled = false;
+							followText.classList.remove('d-none');
+							loadingSpinner.classList.add('d-none');
+						});
+				});
+			}
+		});
+	</script>
+	
 {% endblock %}
