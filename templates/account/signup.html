@@ -1,140 +1,48 @@
-{% load allauth i18n %}
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Custom Tailwind Configuration -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'deep-green': '#008862',
-                        'mint-white': '#eafff6',
-                        'bright-mint': '#5df8bf',
-                        'soft-mint': '#9dfdd4',
-                        'pearl-white': '#f8f8f8'
-                    },
-                    keyframes: {
-                        wiggle: {
-                            '0%, 100%': { transform: 'rotate(-3deg)' },
-                            '50%': { transform: 'rotate(3deg)' },
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        }
-                    },
-                    animation: {
-                        wiggle: 'wiggle 0.3s ease-in-out',
-                        float: 'float 3s ease-in-out infinite'
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-
-<body class="bg-pearl-white">
+{% load allauth i18n %}
 
 
-
-    {% block head_title %}
+{% block head_title %}
     {% trans "Signup" %}
-    {% endblock head_title %}
-
-    {% block content %}
-    <div class="min-h-screen flex items-center justify-center p-4 bg-mint-white/50">
-        <div
-            class="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-soft-mint/30 overflow-hidden transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-deep-green opacity-90 animate-float">
-                        {% trans "Create Your Account" %}
-                    </h1>
-                    <p class="text-sm text-deep-green/70 mt-2">
-                        {% trans "Join our community" %}
-                    </p>
-                </div>
-
-                {% setvar link %}
-                <a href="{{ login_url }}" class="text-bright-mint hover:text-deep-green transition duration-300">
-                    {% endsetvar %}
-                    {% setvar end_link %}
-                </a>
-                {% endsetvar %}
-
-                <p class="text-sm text-center text-deep-green/70 mb-6">
-                    {% blocktranslate %}Already have an account? {{ link }}Sign In{{ end_link }}{% endblocktranslate %}
-                </p>
-
-                {% if not SOCIALACCOUNT_ONLY %}
-                {% url 'account_signup' as action_url %}
-                <form method="post" action="{{ action_url }}" class="space-y-6">
-                    {% csrf_token %}
-
-                    {% for field in form %}
-                    <div>
-                        <label class="block text-sm font-medium text-deep-green/80">
-                            {{ field.label }}
-                        </label>
-                        <input type="{{ field.field.widget.input_type }}" name="{{ field.name }}" {% if field.field.required %}required{% endif %}
-                            class="mt-1 block w-full px-3 py-2 bg-soft-mint/20 border border-bright-mint/30 text-deep-green rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-bright-mint/50 transition duration-300 hover:border-bright-mint/60 group">
-                        {% if field.errors %}
-                        <p class="mt-1 text-sm text-red-500 animate-wiggle">
-                            {{ field.errors }}
-                        </p>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-
-                    <div>
-                        <button type="submit"
-                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-deep-green hover:bg-bright-mint focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-soft-mint transition duration-300 group">
-                            <span class="group-hover:scale-105 transition duration-300">
-                                {% trans "Sign Up" %}
-                            </span>
-                        </button>
-                    </div>
-                </form>
-                {% endif %}
-
-                {% if PASSKEY_SIGNUP_ENABLED %}
-                <div class="my-6 relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-bright-mint/30"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-deep-green/70">
-                            {% trans "Or" %}
-                        </span>
-                    </div>
-                </div>
-
-                <a href="{{ signup_by_passkey_url }}"
-                    class="w-full inline-flex justify-center py-2 px-4 border border-bright-mint/30 rounded-md shadow-sm bg-soft-mint/10 text-sm font-medium text-deep-green hover:bg-soft-mint/20 transition duration-300">
-                    {% trans "Sign up using a passkey" %}
-                </a>
-                {% endif %}
-
-                {% if SOCIALACCOUNT_ENABLED %}
-                <div class="mt-6">
-                    {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    {% endblock content %}
-
-</body>
-
-</html>
+{% endblock head_title %}
+{% block body %}
+    {% element h1 %}
+        {% trans "Sign Up" %}
+    {% endelement %}
+    {% setvar link %}
+        <a href="{{ login_url }}">
+        {% endsetvar %}
+        {% setvar end_link %}
+        </a>
+    {% endsetvar %}
+    {% element p %}
+        {% blocktranslate %}Already have an account? Then please {{ link }}sign in{{ end_link }}.{% endblocktranslate %}
+    {% endelement %}
+    {% if not SOCIALACCOUNT_ONLY %}
+        {% url 'account_signup' as action_url %}
+        {% element form form=form method="post" action=action_url tags="entrance,signup" %}
+            {% slot body %}
+                {% csrf_token %}
+                {% element fields form=form unlabeled=True %}
+                {% endelement %}
+                {{ redirect_field }}
+            {% endslot %}
+            {% slot actions %}
+                {% element button tags="prominent,signup" type="submit" %}
+                    {% trans "Sign Up" %}
+                {% endelement %}
+            {% endslot %}
+        {% endelement %}
+    {% endif %}
+    {% if PASSKEY_SIGNUP_ENABLED %}
+        {% element hr %}
+        {% endelement %}
+        {% element button href=signup_by_passkey_url tags="prominent,signup,outline,primary" %}
+            {% trans "Sign up using a passkey" %}
+        {% endelement %}
+    {% endif %}
+    {% if SOCIALACCOUNT_ENABLED %}
+        {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+    {% endif %}
+{% endblock %}
