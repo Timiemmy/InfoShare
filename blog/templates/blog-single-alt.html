@@ -83,7 +83,7 @@
 						<!-- post bottom section -->
 						<div class="post-bottom">
 							{% if request.user == posts.author %}
-							<a class="btn btn-primary btn-lg" href="{% url 'edit_post' slug=posts.slug %}" role="button">Edit</a>
+							<a class="btn btn-primary btn-lg" href="{% url 'edit_post' year=posts.created_at.year month=posts.created_at.month day=posts.created_at.day slug=posts.slug %}" role="button">Edit</a>
 							<a class="btn btn-secondary btn-lg" href="{% url 'delete_post' pk=posts.pk %}" role="button">Delete</a>
 							{% endif %}
 							<div class="row d-flex align-items-center">

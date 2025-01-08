@@ -50,6 +50,7 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount',
     'crispy_forms',
     "crispy_bootstrap4",
+    "ckeditor",
 ]
 
 # Custom apps
@@ -153,7 +154,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
@@ -173,6 +174,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "accounts.CustomUser"
 
 LOGIN_REDIRECT_URL = "home"
+ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 
 LOGOUT_REDIRECT_URL = "home"
 ACCOUNT_SIGNUP_REDIRECT_URL = "home"
@@ -219,3 +222,20 @@ ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+
+CKEDITOR_BASEPATH = "staticfiles/ckeditor/ckeditor/"
+   # settings.py
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'],
+            ['Link', 'Unlink', 'Image', 'Table', 'HorizontalRule'],
+            ['Source', 'Preview', 'Templates'],
+        ],
+        'height': 300,
+        'width': '100%',
+    },
+}

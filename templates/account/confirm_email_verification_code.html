@@ -1,0 +1,80 @@
+{% extends "account/base_entrance.html" %}
+{% load i18n %}
+{% load allauth account %}
+{% load static %}
+
+{% block head_title %}
+{% translate "Email Verification" %}
+{% endblock head_title %}
+
+{% block body %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <!-- Header -->
+                    <h1 class="text-center mb-4 fw-bold text-primary">
+                        {% translate "Enter Email Verification Code" %}
+                    </h1>
+
+                    <!-- Email Info Message -->
+                    <div class="alert alert-info mb-4" role="alert">
+                        {% setvar email_link %}
+                        <a href="mailto:{{ email }}" class="alert-link">{{ email }}</a>
+                        {% endsetvar %}
+                        <p class="mb-0">
+                            {% blocktranslate %}We've sent a code to {{ email_link }}. The code expires shortly, so
+                            please enter it soon.{% endblocktranslate %}
+                        </p>
+                    </div>
+
+                    <!-- Verification Form -->
+                    {% url 'account_email_verification_sent' as action_url %}
+                    {% element form form=form method="post" action=action_url tags="entrance,email,verification" %}
+                    {% slot body %}
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        {% element fields form=form unlabeled=True %}
+                        {% endelement %}
+                    </div>
+                    {{ redirect_field }}
+                    {% endslot %}
+
+                    {% slot actions %}
+                    <div class="d-grid gap-2">
+                        {% element button type="submit" tags="prominent,confirm" %}
+                        <button class="btn btn-primary btn-lg fw-semibold">
+                            {% translate "Confirm" %}
+                        </button>
+                        {% endelement %}
+
+                        {% if cancel_url %}
+                        {% element button href=cancel_url tags="link,cancel" %}
+                        <button class="btn btn-outline-secondary btn-lg mt-2">
+                            {% translate "Cancel" %}
+                        </button>
+                        {% endelement %}
+                        {% else %}
+                        {% element button type="submit" form="logout-from-stage" tags="link,cancel" %}
+                        <button class="btn btn-outline-secondary btn-lg mt-2">
+                            {% translate "Cancel" %}
+                        </button>
+                        {% endelement %}
+                        {% endif %}
+                    </div>
+                    {% endslot %}
+                    {% endelement %}
+
+                    {% if not cancel_url %}
+                    <form id="logout-from-stage" method="post" action="{% url 'account_logout' %}" class="d-none">
+                        <input type="hidden" name="next" value="{% url 'account_login' %}">
+                        {% csrf_token %}
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

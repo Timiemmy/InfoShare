@@ -58,7 +58,7 @@ class Blog(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.title} - {self.category} - {self.likes}"
+        return f"{self.title} in {self.category} created by {self.author}"
 
     def get_absolute_url(self):
         return reverse('blog_detail', args=

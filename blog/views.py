@@ -62,7 +62,10 @@ def create_post(request):
             blog.author = request.user
             blog.created_at = timezone.now()
             blog.save()
-            return redirect('blog_detail', slug=blog.slug)
+            return redirect('blog_detail', year=blog.created_at.year, 
+                            month=blog.created_at.month, 
+                            day=blog.created_at.day, 
+                            slug=blog.slug)
         else:
             print(form.errors)
     else:
@@ -160,19 +163,23 @@ def blog_search(request):
     return render(request, 'search.html', {'form': form, 'query': query, 'results': results})
 
 
-def edit_post(request, slug):
+def edit_post(request, year, month, day, slug):
+    blog = get_object_or_404(Blog, slug=slug, created_at__year=year,
+                             created_at__month=month, created_at__day=day)
     if request.method == 'POST':
-        blog = get_object_or_404(Blog, slug=slug)
         form = BlogForm(request.POST, request.FILES, instance=blog)
         if form.is_valid():
             blog = form.save(commit=False)
             blog.author = request.user
             blog.save()
-            return redirect('blog_detail', slug=blog.slug)
+            return redirect('blog_detail', year=blog.created_at.year, 
+                            month=blog.created_at.month, 
+                            day=blog.created_at.day, 
+                            slug=blog.slug)
         else:
             print(form.errors)
     else:
-        blog = get_object_or_404(Blog, slug=slug)
+        
         form = BlogForm(instance=blog)
     return render(request, 'edit_post.html', {'form': form})
 
